@@ -1,0 +1,52 @@
+{
+  "id": "zlH1bFBsYAWpBVVw",
+  "name": "Article Generator",
+  "nodes": [
+    {
+      "id": "node-1",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "position": [240, 300],
+      "parameters": {
+        "path": "generate-article",
+        "httpMethod": "POST"
+      }
+    },
+    {
+      "id": "node-2",
+      "name": "OpenAI",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "position": [460, 300],
+      "parameters": {
+        "model": "gpt-4",
+        "prompt": "Generate an article about: {{ $json.topic }}"
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [
+        [
+          {
+            "node": "OpenAI",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": [
+    {
+      "id": "tag-1",
+      "name": "content-generation"
+    }
+  ],
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}
