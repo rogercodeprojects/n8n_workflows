@@ -575,7 +575,7 @@
         -500
       ],
       "id": "b6a7adb0-88b0-43fd-9b9a-49efe00eac58",
-      "name": "Generacion articulo",
+      "name": "Generacion articulo Esto es un test a ver si lo pilla",
       "credentials": {
         "openAiApi": {
           "id": "ogiQOjte8qSp8bX4",
