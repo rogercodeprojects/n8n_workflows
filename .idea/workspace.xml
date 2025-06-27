@@ -18,6 +18,12 @@
     "node.js.selected.package.tslint": "(autodetect)"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Roger\IdeaProjects\n8n_workflows" />
+      <recent name="C:\Users\Roger\IdeaProjects\n8n_workflows\workflows" />
+    </key>
+  </component>
   <component name="RunManager">
     <configuration default="true" type="JetRunConfigurationType">
       <module name="n8n_workflows" />
