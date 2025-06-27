@@ -1,0 +1,345 @@
+{
+  "name": "Image downloader",
+  "nodes": [
+    {
+      "parameters": {
+        "url": "https://api.unsplash.com/search/photos",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "query",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "page",
+              "value": "1"
+            }
+          ]
+        },
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Client-ID jbuwMnYI_MDIkRZLJUgXV8DjdmJbN8hlCJD8i0JARes"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -1300,
+        60
+      ],
+      "id": "b0fd965f-7f07-42d5-80c1-a59ec359e72d",
+      "name": "Unsplash api request"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json.url }}",
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "responseFormat": "file"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -400,
+        80
+      ],
+      "id": "8bac47dc-3120-49ce-984e-af154e41f274",
+      "name": "Download unspash image"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        -820,
+        60
+      ],
+      "id": "a5196e68-adc5-49f3-91fc-0a7f34ce40fa",
+      "name": "Loop Over Items1"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "={{ $('When Executed by Another Workflow').item.json.repositoryOwner }}",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "={{ $('When Executed by Another Workflow').item.json.repositoryName }}",
+          "mode": "name"
+        },
+        "filePath": "={{ $('When Executed by Another Workflow').item.json.path }}{{ $('Loop Over Items1').item.json.filename }}.{{ $json.headers[\"content-type\"].split(\"/\")[1] }}",
+        "binaryData": true,
+        "commitMessage": "uploaded image n8n",
+        "additionalParameters": {
+          "branch": {
+            "branch": "={{ $('When Executed by Another Workflow').item.json.branch }}"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        -180,
+        80
+      ],
+      "id": "3aa17bb2-aef7-4943-b355-9866f0c550db",
+      "name": "GitHub",
+      "webhookId": "c64846ae-a5ce-42e6-925e-d5d11391db69",
+      "credentials": {
+        "githubApi": {
+          "id": "z5cXLLN9ZUHlAe4j",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "return $input.first().json.results.map(img => ({\n  json: {\n    url: img.urls.regular,\n    alt: img.alt_description,\n    filename: `${img.slug}`,\n  }\n}));"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1040,
+        60
+      ],
+      "id": "b74e9559-7257-4514-98b0-2938b08c864c",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "=\n{\n\"url\": \"{{ $json.url }}\",\n\"alt\": \"{{ $json.alt }}\",\n\"filename\": \"{{ $json.filename }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -580,
+        80
+      ],
+      "id": "f1d26754-de73-4d22-8267-09446aa817cf",
+      "name": "Edit Fields2"
+    },
+    {
+      "parameters": {
+        "inputSource": "jsonExample",
+        "jsonExample": "\n{\n\"query\": \n\"cabezon\",\n\"repositoryOwner\": \n\"rogercodeprojects\",\n\"repositoryName\": \n\"clawandcuddles\",\n\"branch\": \n\"stg\",\n\"path\": \n\"src/images/\"\n}"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -1540,
+        60
+      ],
+      "id": "3326f27c-b6ff-4e08-ad39-9f7c8710c041",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "=\n{\n\"url\": \"{{ $('Edit Fields2').item.json.url }}\",\n\"alt\": \"{{ $('Edit Fields2').item.json.alt }}\",\n\"filename\": \"{{ $('Edit Fields2').item.json.filename }}\",\n\"format\": \"{{ $('Download unspash image').item.json.headers['content-type'].split(\"/\")[1] }}\"\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        60,
+        60
+      ],
+      "id": "01b74087-9be1-4f39-9200-dd98db0cfd60",
+      "name": "Edit Fields"
+    }
+  ],
+  "pinData": {
+    "GitHub": [
+      {
+        "json": {
+          "content": {
+            "name": "brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg",
+            "path": "src/images/brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg",
+            "sha": "587e8f3ed98bfd86ac04da019a7fc55595038d50",
+            "size": 116253,
+            "url": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/contents/src/images/brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg?ref=stg",
+            "html_url": "https://github.com/rogercodeprojects/clawandcuddles/blob/stg/src/images/brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg",
+            "git_url": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/git/blobs/587e8f3ed98bfd86ac04da019a7fc55595038d50",
+            "download_url": "https://raw.githubusercontent.com/rogercodeprojects/clawandcuddles/stg/src/images/brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg?token=ATZ57A5E3O3VIZAQDV2BGYLILY4R6",
+            "type": "file",
+            "_links": {
+              "self": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/contents/src/images/brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg?ref=stg",
+              "git": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/git/blobs/587e8f3ed98bfd86ac04da019a7fc55595038d50",
+              "html": "https://github.com/rogercodeprojects/clawandcuddles/blob/stg/src/images/brown-poodle-puppy-on-blue-carpet-1OnbCf7AOdY.jpeg"
+            }
+          },
+          "commit": {
+            "sha": "010e2388f161b6754fb109fce3d0a155e29f27f7",
+            "node_id": "C_kwDOOoCs79oAKDAxMGUyMzg4ZjE2MWI2NzU0ZmIxMDlmY2UzZDBhMTU1ZTI5ZjI3Zjc",
+            "url": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/git/commits/010e2388f161b6754fb109fce3d0a155e29f27f7",
+            "html_url": "https://github.com/rogercodeprojects/clawandcuddles/commit/010e2388f161b6754fb109fce3d0a155e29f27f7",
+            "author": {
+              "name": "rogercodeprojects",
+              "email": "83091331+rogercodeprojects@users.noreply.github.com",
+              "date": "2025-06-27T06:23:31Z"
+            },
+            "committer": {
+              "name": "rogercodeprojects",
+              "email": "83091331+rogercodeprojects@users.noreply.github.com",
+              "date": "2025-06-27T06:23:31Z"
+            },
+            "tree": {
+              "sha": "0b1279c60df10dbe11ab7634ad9ca475b2cb3cd5",
+              "url": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/git/trees/0b1279c60df10dbe11ab7634ad9ca475b2cb3cd5"
+            },
+            "message": "uploaded image n8n",
+            "parents": [
+              {
+                "sha": "58d4feee6d05218612987c6eaab65c9ab8cb915e",
+                "url": "https://api.github.com/repos/rogercodeprojects/clawandcuddles/git/commits/58d4feee6d05218612987c6eaab65c9ab8cb915e",
+                "html_url": "https://github.com/rogercodeprojects/clawandcuddles/commit/58d4feee6d05218612987c6eaab65c9ab8cb915e"
+              }
+            ],
+            "verification": {
+              "verified": false,
+              "reason": "unsigned",
+              "signature": null,
+              "payload": null,
+              "verified_at": null
+            }
+          }
+        }
+      }
+    ],
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "poodle",
+          "repositoryOwner": "rogercodeprojects",
+          "repositoryName": "clawandcuddles",
+          "branch": "stg",
+          "path": "src/images/"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Unsplash api request": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download unspash image": {
+      "main": [
+        [
+          {
+            "node": "GitHub",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items1": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Edit Fields2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GitHub": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields2": {
+      "main": [
+        [
+          {
+            "node": "Download unspash image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Unsplash api request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "77ea5ecf-57f7-4be1-b48d-e2cd76a696fb",
+  "meta": {
+    "instanceId": "37a6ec16393957c5b8866947d2f5270820db51d87d19245140832e0ddc2e0584"
+  },
+  "id": "2BtsUhYynf5HhVeQ",
+  "tags": []
+}

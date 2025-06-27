@@ -1,0 +1,82 @@
+{
+  "name": "Mcp server trigger",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "c645c76c-0e3d-4ff6-9bfe-59983202703f"
+      },
+      "id": "8df73198-0c5b-46f1-a4e8-8467f283a6d7",
+      "name": "MCP Server Trigger1",
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 1,
+      "position": [
+        360,
+        -60
+      ],
+      "webhookId": "c645c76c-0e3d-4ff6-9bfe-59983202703f"
+    },
+    {
+      "parameters": {
+        "description": "Generate articles for clawandcuddles.com",
+        "workflowId": {
+          "__rl": true,
+          "value": "AtoxnOc6StxSBc54",
+          "mode": "list",
+          "cachedResultName": "Articles creator"
+        },
+        "workflowInputs": {
+          "mappingMode": "passThrough",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "id": "1bfbdcce-2e78-4ec1-a856-ddac1b1a0f4f",
+      "name": "Call n8n Workflow Tool1",
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1020,
+        120
+      ],
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Call n8n Workflow Tool1": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "1e8c290f-979e-40e3-bf40-8d0626a2ad9f",
+  "meta": {
+    "instanceId": "37a6ec16393957c5b8866947d2f5270820db51d87d19245140832e0ddc2e0584"
+  },
+  "id": "Ud5q1R3SdXj8OzhP",
+  "tags": []
+}

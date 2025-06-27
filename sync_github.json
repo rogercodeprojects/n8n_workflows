@@ -1,0 +1,739 @@
+{
+  "name": "Sync github",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "18dc3ecc-c1c7-4197-9268-3898636323bc",
+              "name": "github_owner",
+              "type": "string",
+              "value": "rogercodeprojects"
+            },
+            {
+              "id": "b3778554-4200-4e51-842a-dfca05be4f85",
+              "name": "repo_name",
+              "type": "string",
+              "value": "n8n_workflows"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ad04361c-b052-43c1-a51c-c9428343175a",
+      "name": "Define Local Variables",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -1700,
+        440
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "owner": {
+          "__rl": true,
+          "value": "rogercodeprojects",
+          "mode": "name"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n_workflows",
+          "mode": "list",
+          "cachedResultName": "n8n_workflows",
+          "cachedResultUrl": "https://github.com/rogercodeprojects/n8n_workflows"
+        },
+        "events": [
+          "push"
+        ],
+        "options": {
+          "insecureSSL": false
+        }
+      },
+      "id": "8cfa0203-0ed7-40d2-a2cb-d90f04c56176",
+      "name": "Github Trigger - When there is new commit",
+      "type": "n8n-nodes-base.githubTrigger",
+      "position": [
+        -1900,
+        440
+      ],
+      "webhookId": "4152c250-0d25-4a1b-8064-1d170c527daf",
+      "typeVersion": 1,
+      "credentials": {
+        "githubApi": {
+          "id": "z5cXLLN9ZUHlAe4j",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "=https://api.github.com/repos/{{ $('Define Local Variables').item.json.github_owner }}/{{ $('Define Local Variables').item.json.repo_name }}/commits/{{ $('Github Trigger - When there is new commit').item.json.body.head_commit.id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "githubApi",
+        "options": {}
+      },
+      "id": "9f8de5b1-e266-4778-bb0b-8c4f1b5fd6f3",
+      "name": "Fetch commit details via GitHub API",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1260,
+        440
+      ],
+      "typeVersion": 4.2,
+      "credentials": {
+        "githubApi": {
+          "id": "z5cXLLN9ZUHlAe4j",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "7f447d9f-6a55-4c4c-b9c5-d1f5b5fb1476",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $('Github Trigger - When there is new commit').item.json.body.ref }}",
+              "rightValue": "refs/heads/master"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4506b0d0-5ff0-4f3f-ad01-4d50f970978c",
+      "name": "Check if push to master branch",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -1460,
+        440
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "filter-json-files",
+              "operator": {
+                "type": "string",
+                "operation": "endsWith"
+              },
+              "leftValue": "={{ $json.filename }}",
+              "rightValue": ".json"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7f90988d-789d-4c58-a0e7-39d3656e64ae",
+      "name": "Filter JSON workflows only",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        -740,
+        440
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-action",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "update"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "72f879d5-5db0-451d-bf63-6e5b7e48048c",
+      "name": "Filter for UPDATE",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        460,
+        340
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "check-action-create",
+              "operator": {
+                "name": "filter.operator.equals",
+                "type": "string",
+                "operation": "equals"
+              },
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "create"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "75892fef-7a75-47a2-ac60-211bd44fb03c",
+      "name": "Filter for CREATE",
+      "type": "n8n-nodes-base.filter",
+      "position": [
+        460,
+        540
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "files",
+        "options": {}
+      },
+      "id": "ed5aa858-54ae-4153-bd18-a05a0ad1cafa",
+      "name": "Get files changes details1",
+      "type": "n8n-nodes-base.splitOut",
+      "position": [
+        -980,
+        440
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Define Local Variables').item.json.github_owner }}"
+        },
+        "repository": {
+          "__rl": true,
+          "mode": "name",
+          "value": "={{ $('Define Local Variables').item.json.repo_name }}"
+        },
+        "filePath": "={{ $json.filename }}",
+        "asBinaryProperty": false,
+        "additionalParameters": {}
+      },
+      "id": "90ce20af-2eab-48be-b491-f35eac3f8105",
+      "name": "Fetch workflow content from Git2",
+      "type": "n8n-nodes-base.github",
+      "position": [
+        -500,
+        440
+      ],
+      "typeVersion": 1.1,
+      "webhookId": "0a157c6c-ac64-44b4-a14b-4098fc48f255",
+      "credentials": {
+        "githubApi": {
+          "id": "z5cXLLN9ZUHlAe4j",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{  $json.content.base64Decode() }}",
+        "options": {}
+      },
+      "id": "36761930-8d67-43fb-982a-cdc8aed667df",
+      "name": "Decode workflow content to json2",
+      "type": "n8n-nodes-base.set",
+      "position": [
+        -260,
+        440
+      ],
+      "typeVersion": 3.4
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "workflowId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $json.existingId }}"
+        },
+        "workflowObject": "={{ $json.toJsonString() }}",
+        "requestOptions": {}
+      },
+      "id": "1aeda7b9-f032-4072-81d6-d9b08b3578bb",
+      "name": "Update workflow in n8n1",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        700,
+        340
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "n8nApi": {
+          "id": "iwZwX6OZPVAb3t7b",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "workflowObject": "={{ $json.toJsonString() }}",
+        "requestOptions": {}
+      },
+      "id": "0e9a5d8c-8e01-4043-84d3-63197ba02314",
+      "name": "Create new workflow in n8n1",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        700,
+        540
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "n8nApi": {
+          "id": "iwZwX6OZPVAb3t7b",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "filters": {},
+        "requestOptions": {}
+      },
+      "id": "9d91175f-0250-48c3-947a-ae60ceaa6a42",
+      "name": "Get existing workflows from n8n1",
+      "type": "n8n-nodes-base.n8n",
+      "position": [
+        -20,
+        440
+      ],
+      "typeVersion": 1,
+      "credentials": {
+        "n8nApi": {
+          "id": "iwZwX6OZPVAb3t7b",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el workflow del GitHub (datos decodificados del commit)\nconst githubWorkflow = $('Decode workflow content to json2').first().json;\nconst workflowName = githubWorkflow.name;\nconst workflowId = githubWorkflow.id;\n\n// Obtener workflows existentes en n8n\nconst existingWorkflows = $('Get existing workflows from n8n1').first().json.data || [];\n\n// Buscar si existe por nombre o ID\nconst existingWorkflow = existingWorkflows.find(w => \n  w.name === workflowName || w.id === workflowId\n);\n\n// Log para debug\nconsole.log('=== WORKFLOW DETECTION DEBUG ===');\nconsole.log('GitHub Workflow Name:', workflowName);\nconsole.log('GitHub Workflow ID:', workflowId);\nconsole.log('Existing workflows count:', existingWorkflows.length);\nconsole.log('Existing workflow names:', existingWorkflows.map(w => w.name));\nconsole.log('Found existing:', existingWorkflow ? 'YES' : 'NO');\nif (existingWorkflow) {\n  console.log('Existing workflow ID:', existingWorkflow.id);\n}\n\n// Limpiar el workflow de GitHub para creación\nconst cleanGithubWorkflow = {\n  ...githubWorkflow,\n  // Remover campos que pueden causar conflictos al crear\n  id: undefined,  // n8n asignará nuevo ID\n  createdAt: undefined,\n  updatedAt: undefined,\n  versionId: undefined,\n  active: false  // Crear inactivo por seguridad\n};\n\n// Determinar acción\nif (existingWorkflow) {\n  // Workflow existe → UPDATE\n  return [{\n    json: {\n      ...cleanGithubWorkflow,\n      action: 'update',\n      existingId: existingWorkflow.id,\n      message: `Workflow \"${workflowName}\" existe. Actualizando...`\n    }\n  }];\n} else {\n  // Workflow NO existe → CREATE\n  return [{\n    json: {\n      ...cleanGithubWorkflow,\n      action: 'create',\n      message: `Workflow \"${workflowName}\" no existe. Creando nuevo...`\n    }\n  }];\n}"
+      },
+      "id": "72ebfb6c-c7cb-4c42-bdf3-961639fde389",
+      "name": "Check if workflow exists in n8n",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        180,
+        440
+      ],
+      "typeVersion": 2
+    }
+  ],
+  "pinData": {
+    "Github Trigger - When there is new commit": [
+      {
+        "json": {
+          "body": {
+            "ref": "refs/heads/master",
+            "before": "90fc7ce2b8f6590b969e938c178e45917f2d6411",
+            "after": "83c0e6e8a1f628d19b68add48b16eca19d831e28",
+            "repository": {
+              "id": 1009748218,
+              "node_id": "R_kgDOPC-I-g",
+              "name": "n8n_workflows",
+              "full_name": "rogercodeprojects/n8n_workflows",
+              "private": false,
+              "owner": {
+                "name": "rogercodeprojects",
+                "email": "83091331+rogercodeprojects@users.noreply.github.com",
+                "login": "rogercodeprojects",
+                "id": 83091331,
+                "node_id": "MDQ6VXNlcjgzMDkxMzMx",
+                "avatar_url": "https://avatars.githubusercontent.com/u/83091331?v=4",
+                "gravatar_id": "",
+                "url": "https://api.github.com/users/rogercodeprojects",
+                "html_url": "https://github.com/rogercodeprojects",
+                "followers_url": "https://api.github.com/users/rogercodeprojects/followers",
+                "following_url": "https://api.github.com/users/rogercodeprojects/following{/other_user}",
+                "gists_url": "https://api.github.com/users/rogercodeprojects/gists{/gist_id}",
+                "starred_url": "https://api.github.com/users/rogercodeprojects/starred{/owner}{/repo}",
+                "subscriptions_url": "https://api.github.com/users/rogercodeprojects/subscriptions",
+                "organizations_url": "https://api.github.com/users/rogercodeprojects/orgs",
+                "repos_url": "https://api.github.com/users/rogercodeprojects/repos",
+                "events_url": "https://api.github.com/users/rogercodeprojects/events{/privacy}",
+                "received_events_url": "https://api.github.com/users/rogercodeprojects/received_events",
+                "type": "User",
+                "user_view_type": "public",
+                "site_admin": false
+              },
+              "html_url": "https://github.com/rogercodeprojects/n8n_workflows",
+              "description": null,
+              "fork": false,
+              "url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows",
+              "forks_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/forks",
+              "keys_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/keys{/key_id}",
+              "collaborators_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/collaborators{/collaborator}",
+              "teams_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/teams",
+              "hooks_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/hooks",
+              "issue_events_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/issues/events{/number}",
+              "events_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/events",
+              "assignees_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/assignees{/user}",
+              "branches_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/branches{/branch}",
+              "tags_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/tags",
+              "blobs_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/git/blobs{/sha}",
+              "git_tags_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/git/tags{/sha}",
+              "git_refs_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/git/refs{/sha}",
+              "trees_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/git/trees{/sha}",
+              "statuses_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/statuses/{sha}",
+              "languages_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/languages",
+              "stargazers_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/stargazers",
+              "contributors_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/contributors",
+              "subscribers_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/subscribers",
+              "subscription_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/subscription",
+              "commits_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/commits{/sha}",
+              "git_commits_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/git/commits{/sha}",
+              "comments_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/comments{/number}",
+              "issue_comment_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/issues/comments{/number}",
+              "contents_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/contents/{+path}",
+              "compare_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/compare/{base}...{head}",
+              "merges_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/merges",
+              "archive_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/{archive_format}{/ref}",
+              "downloads_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/downloads",
+              "issues_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/issues{/number}",
+              "pulls_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/pulls{/number}",
+              "milestones_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/milestones{/number}",
+              "notifications_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/notifications{?since,all,participating}",
+              "labels_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/labels{/name}",
+              "releases_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/releases{/id}",
+              "deployments_url": "https://api.github.com/repos/rogercodeprojects/n8n_workflows/deployments",
+              "created_at": 1751042264,
+              "updated_at": "2025-06-27T17:01:17Z",
+              "pushed_at": 1751043748,
+              "git_url": "git://github.com/rogercodeprojects/n8n_workflows.git",
+              "ssh_url": "git@github.com:rogercodeprojects/n8n_workflows.git",
+              "clone_url": "https://github.com/rogercodeprojects/n8n_workflows.git",
+              "svn_url": "https://github.com/rogercodeprojects/n8n_workflows",
+              "homepage": null,
+              "size": 0,
+              "stargazers_count": 0,
+              "watchers_count": 0,
+              "language": null,
+              "has_issues": true,
+              "has_projects": true,
+              "has_downloads": true,
+              "has_wiki": true,
+              "has_pages": false,
+              "has_discussions": false,
+              "forks_count": 0,
+              "mirror_url": null,
+              "archived": false,
+              "disabled": false,
+              "open_issues_count": 0,
+              "license": null,
+              "allow_forking": true,
+              "is_template": false,
+              "web_commit_signoff_required": false,
+              "topics": [],
+              "visibility": "public",
+              "forks": 0,
+              "open_issues": 0,
+              "watchers": 0,
+              "default_branch": "master",
+              "stargazers": 0,
+              "master_branch": "master"
+            },
+            "pusher": {
+              "name": "rogercodeprojects",
+              "email": "83091331+rogercodeprojects@users.noreply.github.com"
+            },
+            "sender": {
+              "login": "rogercodeprojects",
+              "id": 83091331,
+              "node_id": "MDQ6VXNlcjgzMDkxMzMx",
+              "avatar_url": "https://avatars.githubusercontent.com/u/83091331?v=4",
+              "gravatar_id": "",
+              "url": "https://api.github.com/users/rogercodeprojects",
+              "html_url": "https://github.com/rogercodeprojects",
+              "followers_url": "https://api.github.com/users/rogercodeprojects/followers",
+              "following_url": "https://api.github.com/users/rogercodeprojects/following{/other_user}",
+              "gists_url": "https://api.github.com/users/rogercodeprojects/gists{/gist_id}",
+              "starred_url": "https://api.github.com/users/rogercodeprojects/starred{/owner}{/repo}",
+              "subscriptions_url": "https://api.github.com/users/rogercodeprojects/subscriptions",
+              "organizations_url": "https://api.github.com/users/rogercodeprojects/orgs",
+              "repos_url": "https://api.github.com/users/rogercodeprojects/repos",
+              "events_url": "https://api.github.com/users/rogercodeprojects/events{/privacy}",
+              "received_events_url": "https://api.github.com/users/rogercodeprojects/received_events",
+              "type": "User",
+              "user_view_type": "public",
+              "site_admin": false
+            },
+            "created": false,
+            "deleted": false,
+            "forced": false,
+            "base_ref": null,
+            "compare": "https://github.com/rogercodeprojects/n8n_workflows/compare/90fc7ce2b8f6...83c0e6e8a1f6",
+            "commits": [
+              {
+                "id": "83c0e6e8a1f628d19b68add48b16eca19d831e28",
+                "tree_id": "e6943f0e22ce2c49d7169cb64d865cc63c9d8773",
+                "distinct": true,
+                "message": "First commit",
+                "timestamp": "2025-06-27T19:02:24+02:00",
+                "url": "https://github.com/rogercodeprojects/n8n_workflows/commit/83c0e6e8a1f628d19b68add48b16eca19d831e28",
+                "author": {
+                  "name": "Roger",
+                  "email": "roger.ortega.94@gmail.com",
+                  "username": "rogercodeprojects"
+                },
+                "committer": {
+                  "name": "Roger",
+                  "email": "roger.ortega.94@gmail.com",
+                  "username": "rogercodeprojects"
+                },
+                "added": [],
+                "removed": [],
+                "modified": [
+                  ".idea/workspace.xml",
+                  "workflows/workflow_test.json"
+                ]
+              }
+            ],
+            "head_commit": {
+              "id": "83c0e6e8a1f628d19b68add48b16eca19d831e28",
+              "tree_id": "e6943f0e22ce2c49d7169cb64d865cc63c9d8773",
+              "distinct": true,
+              "message": "First commit",
+              "timestamp": "2025-06-27T19:02:24+02:00",
+              "url": "https://github.com/rogercodeprojects/n8n_workflows/commit/83c0e6e8a1f628d19b68add48b16eca19d831e28",
+              "author": {
+                "name": "Roger",
+                "email": "roger.ortega.94@gmail.com",
+                "username": "rogercodeprojects"
+              },
+              "committer": {
+                "name": "Roger",
+                "email": "roger.ortega.94@gmail.com",
+                "username": "rogercodeprojects"
+              },
+              "added": [],
+              "removed": [],
+              "modified": [
+                ".idea/workspace.xml",
+                "workflows/workflow_test.json"
+              ]
+            }
+          },
+          "headers": {
+            "host": "n8n.srv874758.hstgr.cloud",
+            "user-agent": "GitHub-Hookshot/2bbfd1f",
+            "content-length": "8284",
+            "accept": "*/*",
+            "content-type": "application/json",
+            "x-forwarded-for": "140.82.115.169",
+            "x-forwarded-host": "n8n.srv874758.hstgr.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "8313fe42598c",
+            "x-github-delivery": "821c6110-5378-11f0-84ea-fec08b44fc0a",
+            "x-github-event": "push",
+            "x-github-hook-id": "554721079",
+            "x-github-hook-installation-target-id": "1009748218",
+            "x-github-hook-installation-target-type": "repository",
+            "x-real-ip": "140.82.115.169",
+            "accept-encoding": "gzip"
+          },
+          "query": {}
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Define Local Variables": {
+      "main": [
+        [
+          {
+            "node": "Check if push to master branch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Github Trigger - When there is new commit": {
+      "main": [
+        [
+          {
+            "node": "Define Local Variables",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch commit details via GitHub API": {
+      "main": [
+        [
+          {
+            "node": "Get files changes details1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if push to master branch": {
+      "main": [
+        [
+          {
+            "node": "Fetch commit details via GitHub API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter JSON workflows only": {
+      "main": [
+        [
+          {
+            "node": "Fetch workflow content from Git2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter for UPDATE": {
+      "main": [
+        [
+          {
+            "node": "Update workflow in n8n1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter for CREATE": {
+      "main": [
+        [
+          {
+            "node": "Create new workflow in n8n1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get files changes details1": {
+      "main": [
+        [
+          {
+            "node": "Filter JSON workflows only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch workflow content from Git2": {
+      "main": [
+        [
+          {
+            "node": "Decode workflow content to json2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decode workflow content to json2": {
+      "main": [
+        [
+          {
+            "node": "Get existing workflows from n8n1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get existing workflows from n8n1": {
+      "main": [
+        [
+          {
+            "node": "Check if workflow exists in n8n",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if workflow exists in n8n": {
+      "main": [
+        [
+          {
+            "node": "Filter for UPDATE",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter for CREATE",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "65a01b34-540a-4065-97b4-9e211f5cc205",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37a6ec16393957c5b8866947d2f5270820db51d87d19245140832e0ddc2e0584"
+  },
+  "id": "zJ7lnmCEoF91bIKR",
+  "tags": []
+}

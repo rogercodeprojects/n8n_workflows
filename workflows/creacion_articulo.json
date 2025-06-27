@@ -1,0 +1,857 @@
+{
+  "name": "Creacion articulo",
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3dcaea30-d81e-4605-b601-c927bc5dfa0e",
+              "name": "organic_results",
+              "value": "={{ $('SerpApi').item.json.organic_results.map(item => ({\n  website: {\n    url: item.link,\n    title: item.title,\n    snippet: item.snippet\n  }\n})) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        620,
+        -240
+      ],
+      "id": "29fa919b-506a-48be-8ca5-d6dd041f2c7e",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "message.content.json",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        1200,
+        -240
+      ],
+      "id": "ff4c4cfa-095b-446c-9cb0-6d0f19ef5724",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "options": {
+          "reset": false
+        }
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1420,
+        -240
+      ],
+      "id": "aa207e0a-51fe-407d-ba1f-427036032728",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "url": "={{ $json['message.content.json'] }}",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1660,
+        -220
+      ],
+      "id": "422ba6e0-462d-455f-bef1-2e0c85ae1d2e",
+      "name": "HTTP Request",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        2080,
+        -500
+      ],
+      "id": "f2a9501f-7418-4435-be3c-8527563e5447",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "return {\n  website: $input.item.json.data\n    .replace(/<script[^>]*>[\\s\\S]*?<\\/script>/gi, '')\n    .replace(/<style[^>]*>[\\s\\S]*?<\\/style>/gi, '')\n    .replace(/<!--[\\s\\S]*?-->/g, '')\n    .replace(/<(?!\\/?h[1-6]\\b)[^>]*>/gi, ' ')\n    .replace(/\\s+/g, ' ')\n    .trim()\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1900,
+        -500
+      ],
+      "id": "465fd43a-19f0-4ab9-94e3-6452450cd368",
+      "name": "Limpiar paginas"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bbddcebd-a9a9-40fc-912d-73481be8d51e",
+              "leftValue": "={{ $json.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1700,
+        -500
+      ],
+      "id": "3c7e93ed-a38a-4529-a98b-f85bd22cfc92",
+      "name": "Filter not empty websites"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=From the following list of web pages, filter and return only the URLs of informational pages (e.g., articles, blogs, guides, wikis, or documentation).\nExclude any URLs that belong to e-commerce, SaaS tools, brand homepages, promotional or commercial pages, landing pages, or product showcases.\n\nReturn the result as a clean JSON array of URLs, like this:\n\njson: [\"https://example.com/article-1\", \"https://example.com/blog/post\"]  \nOnly include valid informational pages. Do not return titles, snippets, or explanations—just the final filtered list of URLs as a JSON array.\n{{ $json.organic_results.map(item => `Title: ${item.website.title}\\nSnippet: ${item.website.snippet}\\nURL: ${item.website.url}\\n`).join(\"\\n\") }}\n"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        840,
+        -240
+      ],
+      "id": "a36c57e1-e250-4f4a-b4f2-38db879c051f",
+      "name": "Coger solo webs informacionales",
+      "credentials": {
+        "openAiApi": {
+          "id": "ogiQOjte8qSp8bX4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=*You are the art director of a digital publication.\nAnalyze the main concept of the following topic and return a JSON object with:\n\n\"image-keyword\": a single English keyword that visually represents the topic and can be used to search on Unsplash.\n\n\"animal\": one of the following values: \"dogs\", \"cats\".\n\n\"category\": choose one of \"education\", \"accessories\", or \"fun-facts\" based on the content focus.\nTopic → “{{ $json.search_information.query_displayed }}”\nRespond with JSON only, no comments or extra text.*"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -40,
+        -240
+      ],
+      "id": "2fcbbb45-0f98-4146-8e15-306927ee2c15",
+      "name": "Escoger keyword imagen",
+      "credentials": {
+        "openAiApi": {
+          "id": "ogiQOjte8qSp8bX4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Traduceme al ingles el siguiente articulo con el contexto de estados unidos. El resultado tiene que ser el mismo tipo de arhivo mdx con el frontmatter pero traducido: \n{{ $json.message.content.content }}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3720,
+        -800
+      ],
+      "id": "d61a31ad-b6ba-451e-9a38-a34a4bc6ddb8",
+      "name": "Generacion articulo1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ogiQOjte8qSp8bX4",
+          "name": "OpenAi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "rogercodeprojects",
+          "mode": "list",
+          "cachedResultName": "rogercodeprojects",
+          "cachedResultUrl": "https://github.com/rogercodeprojects"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "clawandcuddles",
+          "mode": "list",
+          "cachedResultName": "clawandcuddles",
+          "cachedResultUrl": "https://github.com/rogercodeprojects/clawandcuddles"
+        },
+        "filePath": "=src/content/blog/{{ $('Escoger keyword imagen').item.json.message.content.animal }}/{{ $('Escoger keyword imagen').item.json.message.content.category }}/{{ $('Generar titulo y descripcion1').item.json.message.content.urlSlug }}/index.es.mdx",
+        "fileContent": "={{ $json.message.content.content }}",
+        "commitMessage": "=blog article n8n {{ $('Generar titulo y descripcion1').item.json.message.content.urlSlug }}",
+        "additionalParameters": {
+          "branch": {
+            "branch": "stg"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        4160,
+        -500
+      ],
+      "id": "acbb3aa7-e89e-4aad-9c4e-36acf96ae839",
+      "name": "Español",
+      "webhookId": "02196c29-a8f6-4a61-909b-556f17d51d1e",
+      "credentials": {
+        "githubApi": {
+          "id": "z5cXLLN9ZUHlAe4j",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "rogercodeprojects",
+          "mode": "list",
+          "cachedResultName": "rogercodeprojects",
+          "cachedResultUrl": "https://github.com/rogercodeprojects"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "clawandcuddles",
+          "mode": "list",
+          "cachedResultName": "clawandcuddles",
+          "cachedResultUrl": "https://github.com/rogercodeprojects/clawandcuddles"
+        },
+        "filePath": "=src/content/content-by-language/es/blog//{{ $json.message.content }}.mdx",
+        "fileContent": "={{ $json.message.content.content }}",
+        "commitMessage": "=blog articlue n8n {{ $json.message.content.filename }}",
+        "additionalParameters": {
+          "branch": {
+            "branch": "stg"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        4160,
+        -800
+      ],
+      "id": "9c049f55-3789-4496-a9b2-e2e64dd8ae91",
+      "name": "Ingles",
+      "webhookId": "02196c29-a8f6-4a61-909b-556f17d51d1e",
+      "credentials": {
+        "githubApi": {
+          "id": "z5cXLLN9ZUHlAe4j",
+          "name": "GitHub account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -800,
+        -240
+      ],
+      "id": "5bb60152-b905-4beb-bd31-c150f51ca2ed",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2988ceee-5f51-4350-b2c6-100fac46dc55",
+              "name": "query",
+              "value": "={{ $json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -520,
+        -240
+      ],
+      "id": "4627ac87-3fc1-436c-a70b-e4365d15eded",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "={{ $json.query }}"
+            },
+            {
+              "name": "location",
+              "value": "Barcelona,Catalonia,Spain"
+            },
+            {
+              "name": "google_domain",
+              "value": "google.es"
+            },
+            {
+              "name": "hl",
+              "value": "es"
+            },
+            {
+              "name": "gl",
+              "value": "es"
+            },
+            {
+              "name": "lr",
+              "value": "lang_es"
+            },
+            {
+              "name": "no_cache",
+              "value": "true"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -260,
+        -240
+      ],
+      "id": "a83b208a-d2f9-4381-8903-d178ebf013d5",
+      "name": "SerpApi",
+      "credentials": {
+        "serpApi": {
+          "id": "hgyRAut7tS5MBaVx",
+          "name": "SerpApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "workflowId": {
+          "__rl": true,
+          "value": "2BtsUhYynf5HhVeQ",
+          "mode": "list",
+          "cachedResultName": "Image downloader"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "branch": "stg",
+            "path": "src/images/",
+            "repositoryName": "clawandcuddles",
+            "repositoryOwner": "rogercodeprojects",
+            "query": "={{ $json.message.content[\"image-keyword\"] }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "query",
+              "displayName": "query",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "repositoryOwner",
+              "displayName": "repositoryOwner",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "repositoryName",
+              "displayName": "repositoryName",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "branch",
+              "displayName": "branch",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "path",
+              "displayName": "path",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.2,
+      "position": [
+        380,
+        -240
+      ],
+      "id": "aaf9c48a-7fff-4d7d-b3a9-86ccb2b44288",
+      "name": "Upload image"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "0304afd6-de5c-42fe-a640-941c9efb6995",
+              "name": "data",
+              "value": "={{ $json.data.slice(0, 3) }}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2280,
+        -500
+      ],
+      "id": "9a2bfa5a-f226-4aa4-97f6-a6426fd8569d",
+      "name": "Coger 3 primeras webs"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=I will provide the full content of some web pages that discuss the same topic.\n\nPlease wait to analyze the content until all pages have been shared.\n\nOnce all content is received, do the following:\n\nIdentify and list the common sections/headings shared across the three pages.\n\nSummarize the key ideas and topics that are consistently mentioned.\n\nExtract recurring keywords and phrases used in all pages, especially those relevant for SEO (i.e., search intent, semantic keywords).\n\nHighlight major differences or unique points between the pages (to detect content gaps or alternative perspectives).\n\nBased on this analysis, create a structured content brief with:\n\nSuggested H1, H2, H3 headings\n\nEssential information to include in each section\n\nA list of main and secondary keywords for SEO optimization\n\nContent gaps or differentiators to take advantage of\n\nThis summary will be used to write an SEO-optimized article, so focus on clarity, relevance, and completeness.\n\n{{ $json.data.map((item, index) => `---\\nWeb Page ${index + 1}:\\n${item.website}`).join('\\n\\n') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2480,
+        -500
+      ],
+      "id": "583a5e8d-b55e-423e-9a6b-2844204f35d7",
+      "name": "Resumen articulo",
+      "credentials": {
+        "openAiApi": {
+          "id": "ogiQOjte8qSp8bX4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Using the content brief and the pre-approved title/description/slug provided below, write a complete SEO-optimized article in MDX format, without emojis.\n\nCONTENT BRIEF:\n{{ $('Resumen articulo').item.json.message.content }}\n\nAPPROVED FRONTMATTER DATA:\nTitle: {{ $json.message.content.title }}\nDescription: {{ $json.message.content.description }}\nURL Slug: {{ $json.message.content.urlSlug }}\n\nThe article must:\n\n1. Use the EXACT title, description, and slug provided above in the frontmatter\n2. Use structured headings (##, ###) based on the content brief outline\n3. Follow a friendly, informative, and enthusiastic tone, suitable for pet lovers\n4. Be detailed and well-written, using natural language\n5. Incorporate the keywords from the brief naturally, without keyword stuffing\n6. Use short, scannable paragraphs and helpful formatting\n7. Be comprehensive and cover all points from the content brief\n\nFrontmatter format (use EXACTLY this structure):\n---\ntitle: \"{{ $json.message.content.title }}\"\ndescription: \"{{ $json.message.content.description }}\"\nurlSlug: \"{{ $json.message.content.urlSlug }}\"\npubDate: {{ $now.toFormat(\"yyyy-LL-dd\") }}\nimage: \"/images/{{ $('Upload image').item.json.filename }}.{{ $('Upload image').item.json.format }}\"\n---\n\nDo NOT modify the title, description, or urlSlug. Use them exactly as provided.\n\nReturn only a JSON with:\n\"content\": the complete MDX article as a string"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        3240,
+        -500
+      ],
+      "id": "b6a7adb0-88b0-43fd-9b9a-49efe00eac58",
+      "name": "Generacion articulo",
+      "credentials": {
+        "openAiApi": {
+          "id": "ogiQOjte8qSp8bX4",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "chatgpt-4o-latest",
+          "mode": "list",
+          "cachedResultName": "CHATGPT-4O-LATEST"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "=Based on this content brief, create an SEO-optimized title, meta description, and URL slug in Spanish:\n\n{{ $json.message.content }}\n\nRequirements:\n- Title: EXACTLY 60 characters or less (count every character including spaces)\n- Description: EXACTLY 155 characters or less (count every character including spaces)\n- URL Slug: SEO-friendly slug (lowercase, hyphens, no special characters, max 50 characters)\n- Use the main keyword from the brief\n- Make them compelling for pet lovers\n- The title should work as an H1 for the article\n\nIMPORTANT: Count each character carefully. Be precise with the character limits.\n\nReturn ONLY a JSON with:\n{\n  \"title\": \"your title here\",\n  \"description\": \"your description here\",\n  \"urlSlug\": \"your-url-slug-here\",\n  \"titleLength\": number_of_characters_in_title,\n  \"descriptionLength\": number_of_characters_in_description,\n  \"slugLength\": number_of_characters_in_slug\n}"
+            }
+          ]
+        },
+        "jsonOutput": true,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        2860,
+        -500
+      ],
+      "id": "fc5ce54e-f9d8-4470-98c0-0c7e9c6b3803",
+      "name": "Generar titulo y descripcion1",
+      "credentials": {
+        "openAiApi": {
+          "id": "ogiQOjte8qSp8bX4",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "caniche"
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Coger solo webs informacionales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Filter not empty websites",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "Coger 3 primeras webs",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Limpiar paginas": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter not empty websites": {
+      "main": [
+        [
+          {
+            "node": "Limpiar paginas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Coger solo webs informacionales": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Escoger keyword imagen": {
+      "main": [
+        [
+          {
+            "node": "Upload image",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generacion articulo1": {
+      "main": [
+        [
+          {
+            "node": "Ingles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Español": {
+      "main": [
+        []
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "SerpApi",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpApi": {
+      "main": [
+        [
+          {
+            "node": "Escoger keyword imagen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload image": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Coger 3 primeras webs": {
+      "main": [
+        [
+          {
+            "node": "Resumen articulo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resumen articulo": {
+      "main": [
+        [
+          {
+            "node": "Generar titulo y descripcion1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar titulo y descripcion1": {
+      "main": [
+        [
+          {
+            "node": "Generacion articulo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generacion articulo": {
+      "main": [
+        [
+          {
+            "node": "Español",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Generacion articulo1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "6d305700-4f4d-4d2f-a904-d8893b87b14f",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "37a6ec16393957c5b8866947d2f5270820db51d87d19245140832e0ddc2e0584"
+  },
+  "id": "AtoxnOc6StxSBc54",
+  "tags": []
+}
