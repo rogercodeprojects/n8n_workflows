@@ -1,0 +1,187 @@
+{
+  "name": "Test Workflow - Weather Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 6
+            }
+          ]
+        }
+      },
+      "id": "schedule-trigger",
+      "name": "Every 6 hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        240,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "url": "https://api.openweathermap.org/data/2.5/weather",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "q",
+              "value": "Barcelona,ES"
+            },
+            {
+              "name": "appid",
+              "value": "YOUR_API_KEY_HERE"
+            },
+            {
+              "name": "units",
+              "value": "metric"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "weather-api",
+      "name": "Get Weather Data",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        460,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "combinator": "or",
+          "conditions": [
+            {
+              "id": "temp-check",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              },
+              "leftValue": "={{ $json.main.temp }}",
+              "rightValue": 30
+            },
+            {
+              "id": "weather-check",
+              "operator": {
+                "type": "string",
+                "operation": "contains"
+              },
+              "leftValue": "={{ $json.weather[0].main }}",
+              "rightValue": "Rain"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "weather-filter",
+      "name": "Check if Alert Needed",
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        680,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Create a weather alert message\nconst weather = $input.first().json;\n\nconst temp = weather.main.temp;\nconst condition = weather.weather[0].main;\nconst description = weather.weather[0].description;\nconst city = weather.name;\n\nlet alertType = '';\nlet message = '';\n\nif (temp > 30) {\n  alertType = '🔥 HIGH TEMPERATURE';\n  message = `Hot weather alert! Temperature in ${city} is ${temp}°C`;\n} else if (condition.toLowerCase().includes('rain')) {\n  alertType = '🌧️ RAIN ALERT';\n  message = `Rain expected in ${city}: ${description}`;\n}\n\nreturn [{\n  json: {\n    alertType,\n    message,\n    temperature: temp,\n    condition,\n    city,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "id": "create-alert",
+      "name": "Create Alert Message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        900,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={\n  \"text\": \"{{ $json.alertType }}\\n\\n{{ $json.message }}\\n\\nTime: {{ $json.timestamp }}\",\n  \"channel\": \"#weather-alerts\"\n}",
+        "options": {}
+      },
+      "id": "format-slack",
+      "name": "Format for Slack",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1120,
+        300
+      ]
+    }
+  ],
+  "connections": {
+    "Every 6 hours": {
+      "main": [
+        [
+          {
+            "node": "Get Weather Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Weather Data": {
+      "main": [
+        [
+          {
+            "node": "Check if Alert Needed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check if Alert Needed": {
+      "main": [
+        [
+          {
+            "node": "Create Alert Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Alert Message": {
+      "main": [
+        [
+          {
+            "node": "Format for Slack",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "createdAt": "2025-06-28T10:00:00.000Z",
+  "updatedAt": "2025-06-28T10:30:00.000Z",
+  "id": "test-workflow-12345",
+  "tags": [
+    {
+      "createdAt": "2025-06-28T10:00:00.000Z",
+      "updatedAt": "2025-06-28T10:00:00.000Z",
+      "id": "tag-weather",
+      "name": "weather"
+    }
+  ]
+}

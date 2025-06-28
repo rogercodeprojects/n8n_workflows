@@ -163,7 +163,7 @@
       <option name="presentableId" value="Default" />
       <updated>1751065434662</updated>
       <workItem from="1751065439079" duration="1200000" />
-      <workItem from="1751089545886" duration="5160000" />
+      <workItem from="1751089545886" duration="5468000" />
     </task>
     <task id="LOCAL-00012" summary="First commit">
       <option name="closed" value="true" />
@@ -357,11 +357,46 @@
       <option name="project" value="LOCAL" />
       <updated>1751095450491</updated>
     </task>
-    <option name="localTasksCounter" value="36" />
+    <task id="LOCAL-00036" summary="First commit">
+      <option name="closed" value="true" />
+      <created>1751095622079</created>
+      <option name="number" value="00036" />
+      <option name="presentableId" value="LOCAL-00036" />
+      <option name="project" value="LOCAL" />
+      <updated>1751095622079</updated>
+    </task>
+    <task id="LOCAL-00037" summary="First commit">
+      <option name="closed" value="true" />
+      <created>1751095698919</created>
+      <option name="number" value="00037" />
+      <option name="presentableId" value="LOCAL-00037" />
+      <option name="project" value="LOCAL" />
+      <updated>1751095698919</updated>
+    </task>
+    <task id="LOCAL-00038" summary="First commit">
+      <option name="closed" value="true" />
+      <created>1751095754664</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1751095754664</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="First commit" />
