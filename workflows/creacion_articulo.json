@@ -227,7 +227,7 @@
         -800
       ],
       "id": "d61a31ad-b6ba-451e-9a38-a34a4bc6ddb8",
-      "name": "Generacion articulo1 Pokoyo hermano",
+      "name": "Generacion articulo1",
       "credentials": {
         "openAiApi": {
           "id": "ogiQOjte8qSp8bX4",
@@ -542,7 +542,7 @@
         -500
       ],
       "id": "583a5e8d-b55e-423e-9a6b-2844204f35d7",
-      "name": "Resumen articulosasdfasdfdfs",
+      "name": "Resumen articulos",
       "credentials": {
         "openAiApi": {
           "id": "ogiQOjte8qSp8bX4",
