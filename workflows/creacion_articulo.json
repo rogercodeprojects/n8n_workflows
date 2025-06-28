@@ -827,6 +827,11 @@
             "node": "Generacion articulo",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Generacion articulos",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
@@ -857,13 +862,29 @@
           }
         ]
       ]
+    },
+    "Generacion articulos": {
+      "main": [
+        [
+          {
+            "node": "Generacion articulo1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Español",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "active": false,
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "d4e7c528-d4bd-44bf-a279-b6fe001498cc",
+  "versionId": "90459acf-e833-4499-a173-75e6c9724092",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "37a6ec16393957c5b8866947d2f5270820db51d87d19245140832e0ddc2e0584"
