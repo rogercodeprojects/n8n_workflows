@@ -1,4 +1,5 @@
 {
+  "name": "Creacion articulo",
   "nodes": [
     {
       "parameters": {
@@ -616,6 +617,15 @@
       }
     }
   ],
+  "pinData": {
+    "When Executed by Another Workflow": [
+      {
+        "json": {
+          "query": "caniche"
+        }
+      }
+    ]
+  },
   "connections": {
     "Edit Fields": {
       "main": [
@@ -787,6 +797,11 @@
       "main": [
         [
           {
+            "node": "Resumen articulo",
+            "type": "main",
+            "index": 0
+          },
+          {
             "node": "Resumen articulos",
             "type": "main",
             "index": 0
@@ -794,11 +809,22 @@
         ]
       ]
     },
-    "Resumen articulos": {
+    "Resumen articulo": {
       "main": [
         [
           {
             "node": "Generar titulo y descripcion1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generar titulo y descripcion1": {
+      "main": [
+        [
+          {
+            "node": "Generacion articulo",
             "type": "main",
             "index": 0
           }
@@ -821,11 +847,11 @@
         ]
       ]
     },
-    "Generar titulo y descripcion1": {
+    "Resumen articulos": {
       "main": [
         [
           {
-            "node": "Generacion articulo",
+            "node": "Generar titulo y descripcion1",
             "type": "main",
             "index": 0
           }
@@ -833,15 +859,15 @@
       ]
     }
   },
-  "pinData": {
-    "When Executed by Another Workflow": [
-      {
-        "query": "caniche"
-      }
-    ]
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
   },
+  "versionId": "d4e7c528-d4bd-44bf-a279-b6fe001498cc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "37a6ec16393957c5b8866947d2f5270820db51d87d19245140832e0ddc2e0584"
-  }
+  },
+  "id": "AtoxnOc6StxSBc54",
+  "tags": []
 }
